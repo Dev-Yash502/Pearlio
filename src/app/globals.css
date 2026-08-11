@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-heading: 'Outfit', sans-serif;
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  html {
+    background-color: #0A0915;
+    /* Firefox scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #242047 #0A0915;
+  }
+
+  body {
+    @apply bg-background text-textPrimary antialiased overflow-x-hidden font-sans;
+  }
+
+  /* Custom Scrollbar - Webkit */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0A0915;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #242047;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A855F7;
+  }
+
+  /* -------------------------------------------------------
+   * Respect user's motion preference globally.
+   * Disables ALL framer-motion and CSS transitions/animations
+   * for users who have enabled "Reduce Motion" in their OS.
+   * ------------------------------------------------------- */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  .text-glow-primary {
+    text-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+  }
+  .text-glow-secondary {
+    text-shadow: 0 0 20px rgba(255, 46, 147, 0.5);
+  }
+  .text-glow-accent {
+    text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+  }
+  
+  /* Modern Grid Background */
+  .grid-bg {
+    background-image: 
+      linear-gradient(to right, rgba(36, 32, 71, 0.25) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(36, 32, 71, 0.25) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  
+  /* Radial glow */
+  .radial-glow {
+    background: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 60%);
+  }
+}
+
+/* Liquid Glass CSS Effect */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  /* FIX: Removed background-blend-mode: luminosity — had no effect with single bg layer */
+}
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+@font-face {
+  font-family: 'Helvetica Neue Roman';
+  src: url('/fonts/HelveticaNeue-Roman.woff2') format('woff2'),
+       url('/fonts/HelveticaNeue-Roman.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-helvetica-neue {
+  font-family: 'Helvetica Neue Roman', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Premium Cinematic Noise Grain Overlay
+ * FIX: z-index reduced to 99998 so the custom cursor (99999) renders above it.
+ * FIX: will-change:transform removed — it was permanently promoting this pseudo-element
+ *      to its own compositor layer for no benefit.
+ */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0.02;
+  z-index: 99998;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* GPU Hardware Acceleration helper
+ * FIX: Removed permanent will-change from .gpu-layer class.
+ * will-change should only be applied right before an animation starts (via JS or hover),
+ * not permanently on every element — it wastes VRAM and can cause layer explosion.
+ * Use transform: translateZ(0) alone for compositor promotion.
+ */
+.gpu-layer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Smooth image/canvas rendering */
+canvas, img {
+  image-rendering: auto;
+}

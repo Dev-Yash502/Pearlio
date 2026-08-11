@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scroll Animation</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Clean Loading Screen -->
+  <div id="loader">
+    <div class="loader-container">
+      <div class="spinner"></div>
+      <div class="progress-text"><span id="progress-percent">0</span>%</div>
+    </div>
+  </div>
+
+  <!-- Canvas for drawing the animation frames -->
+  <canvas id="animation-canvas"></canvas>
+
+  <!-- Scroll spacer to give the page height for scrolling -->
+  <div class="scroll-spacer"></div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
