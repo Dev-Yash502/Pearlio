@@ -5,6 +5,12 @@ import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Sparkles, Send, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
+declare global {
+  interface Window {
+    fbq?: (...args: any[]) => void;
+  }
+}
+
 export default function Footer() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -54,8 +60,14 @@ export default function Footer() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email) return;
+    if (!name || !email || submitted) return;
     setSubmitted(true);
+
+    // Track Lead conversion event with Meta Pixel
+    if (typeof window !== "undefined" && typeof window.fbq === "function") {
+      window.fbq("track", "Lead");
+    }
+
     setTimeout(() => {
       setSubmitted(false);
       setName("");
