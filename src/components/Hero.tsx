@@ -30,8 +30,7 @@ export default function Hero() {
 
     // Create a hidden video element to decode mp4 frames locally
     const video = document.createElement("video");
-    // FIX: Set event handler BEFORE setting src to avoid race condition where
-    // metadata fires synchronously (e.g. cached video on iOS Safari)
+    video.src = "/fish-video.mp4";
     video.muted = true;
     video.playsInline = true;
     video.preload = "auto";
@@ -40,13 +39,9 @@ export default function Hero() {
     const tempFrames: ImageBitmap[] = [];
 
     const extractFrames = async () => {
-      // Wait for video to load metadata — handler set before src assignment
+      // Wait for video to load metadata
       await new Promise<void>((resolve) => {
-        if (video.readyState >= 1) {
-          resolve();
-        } else {
-          video.addEventListener('loadedmetadata', () => resolve(), { once: true });
-        }
+        video.onloadedmetadata = () => resolve();
       });
 
       const duration = video.duration;
@@ -58,10 +53,9 @@ export default function Hero() {
         const targetTime = i * step;
         video.currentTime = targetTime;
 
-        // FIX: Use addEventListener with { once: true } instead of assigning onseeked
-        // directly — overwriting onseeked inside a loop drops events from prior seeks.
+        // Wait for browser hardware decoder to seek the frame
         await new Promise<void>((resolve) => {
-          video.addEventListener('seeked', () => resolve(), { once: true });
+          video.onseeked = () => resolve();
         });
 
         // Capture frame as hardware-accelerated ImageBitmap
@@ -82,9 +76,6 @@ export default function Hero() {
       }
     };
 
-    // Now set src (after handlers attached)
-    video.src = "/fish-video.mp4";
-
     extractFrames().catch((err) => {
       console.error("Failed to extract video frames:", err);
       if (active) setLoading(false);
@@ -93,9 +84,6 @@ export default function Hero() {
     return () => {
       active = false;
       video.src = "";
-      // FIX: Close all ImageBitmaps to release GPU memory
-      framesRef.current.forEach((b) => b.close());
-      framesRef.current = [];
     };
   }, []);
 
@@ -168,25 +156,22 @@ export default function Hero() {
 
   // Buttery-smooth rendering loop using LERP damping
   useEffect(() => {
-    if (loading) return;
+    if (loading || !isVisible) return;
 
     let animationFrameId: number;
 
     const syncVideoFrame = () => {
-      // FIX: When not visible, still reschedule the next frame — do NOT return early
-      // without rescheduling, or the loop permanently dies and canvas freezes when
-      // the user scrolls back to the Hero section.
-      if (isVisible) {
-        const diff = Math.abs(targetFrameRef.current - currentFrameRef.current);
+      if (!isVisible) return;
 
-        if (diff > 0.05) {
-          // Damping factor of 0.15 for high-end organic scroll-linked easing
-          currentFrameRef.current = currentFrameRef.current + (targetFrameRef.current - currentFrameRef.current) * 0.15;
-          drawFrame(Math.round(currentFrameRef.current));
-        } else if (currentFrameRef.current !== targetFrameRef.current) {
-          currentFrameRef.current = targetFrameRef.current;
-          drawFrame(Math.round(currentFrameRef.current));
-        }
+      const diff = Math.abs(targetFrameRef.current - currentFrameRef.current);
+
+      if (diff > 0.05) {
+        // Damping factor of 0.15 for high-end organic scroll-linked easing
+        currentFrameRef.current = currentFrameRef.current + (targetFrameRef.current - currentFrameRef.current) * 0.15;
+        drawFrame(Math.round(currentFrameRef.current));
+      } else if (currentFrameRef.current !== targetFrameRef.current) {
+        currentFrameRef.current = targetFrameRef.current;
+        drawFrame(Math.round(currentFrameRef.current));
       }
 
       animationFrameId = requestAnimationFrame(syncVideoFrame);
@@ -218,16 +203,12 @@ export default function Hero() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6, ease: "easeInOut" }}
               className="absolute inset-0 w-full h-full bg-background flex flex-col items-center justify-center z-[9999]"
-              role="status"
-              aria-live="polite"
-              aria-label={`Loading: ${loadPercent}%`}
             >
               <div className="flex flex-col items-center gap-4">
-                {/* FIX: Use border-2 + border-transparent + override t and r sides for correct cross-browser spinner */}
-                <div className="w-16 h-16 rounded-full border-2 border-transparent border-t-primary border-r-primary animate-spin flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-accent animate-pulse" aria-hidden="true" />
+                <div className="w-16 h-16 rounded-full border-t-2 border-primary border-r-2 border-transparent animate-spin flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-accent animate-pulse" />
                 </div>
-                <div className="font-heading font-black text-2xl text-white tracking-widest" aria-hidden="true">
+                <div className="font-heading font-black text-2xl text-white tracking-widest">
                   PEARLIO<span className="text-secondary">.</span>
                 </div>
                 <div className="text-sm font-semibold font-mono text-textMuted">
@@ -241,7 +222,6 @@ export default function Hero() {
         {/* Localized 60fps hardware-accelerated Canvas background */}
         <canvas
           ref={canvasRef}
-          aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover z-0 bg-background"
           style={{ opacity: loading ? 0 : 1, transition: "opacity 0.5s ease" }}
         />
@@ -250,8 +230,8 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/45 to-transparent z-[1] pointer-events-none" />
         <div className="absolute inset-0 bg-background/25 backdrop-blur-[1px] z-[1] pointer-events-none" />
 
-        {/* Giant Background display text — decorative, hidden from screen readers */}
-        <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-[1]">
+        {/* Giant Background display text */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-[1]">
           <motion.span
             style={{ opacity: ghostOpacity }}
             className="font-display font-black text-white leading-none whitespace-nowrap text-[120px] sm:text-[24vw] tracking-tighter"

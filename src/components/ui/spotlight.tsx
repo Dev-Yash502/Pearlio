@@ -47,43 +47,28 @@ export function Spotlight({
     [mouseX, mouseY, parentElement]
   );
 
-  // FIX: Use stable named function references so removeEventListener actually works.
-  // Previously, anonymous arrow functions were used which cannot be matched by removeEventListener,
-  // causing event listeners to pile up and never be cleaned up (memory leak).
-  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
-  const handleMouseLeave = useCallback(() => setIsHovered(false), []);
-
   useEffect(() => {
     if (!parentElement) return;
 
     parentElement.addEventListener('mousemove', handleMouseMove);
-    parentElement.addEventListener('mouseenter', handleMouseEnter);
-    parentElement.addEventListener('mouseleave', handleMouseLeave);
+    parentElement.addEventListener('mouseenter', () => setIsHovered(true));
+    parentElement.addEventListener('mouseleave', () => setIsHovered(false));
 
     return () => {
       parentElement.removeEventListener('mousemove', handleMouseMove);
-      parentElement.removeEventListener('mouseenter', handleMouseEnter);
-      parentElement.removeEventListener('mouseleave', handleMouseLeave);
+      parentElement.removeEventListener('mouseenter', () => setIsHovered(true));
+      parentElement.removeEventListener('mouseleave', () =>
+        setIsHovered(false)
+      );
     };
-  }, [parentElement, handleMouseMove, handleMouseEnter, handleMouseLeave]);
-
-  // Use fill prop if provided, otherwise default gradient
-  const gradientClass = fill
-    ? ''
-    : 'from-zinc-50 via-zinc-100 to-zinc-200';
-
-  const gradientStyle = fill
-    ? { background: `radial-gradient(circle at center, ${fill} 0%, transparent 80%)` }
-    : {};
+  }, [parentElement, handleMouseMove]);
 
   return (
     <motion.div
       ref={containerRef}
-      aria-hidden="true"
       className={cn(
-        'pointer-events-none absolute rounded-full blur-xl transition-opacity duration-200',
-        !fill && 'bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops),transparent_80%)]',
-        gradientClass,
+        'pointer-events-none absolute rounded-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops),transparent_80%)] blur-xl transition-opacity duration-200',
+        'from-zinc-50 via-zinc-100 to-zinc-200',
         isHovered ? 'opacity-100' : 'opacity-0',
         className
       )}
@@ -92,7 +77,6 @@ export function Spotlight({
         height: size,
         left: spotlightLeft,
         top: spotlightTop,
-        ...gradientStyle,
       }}
     />
   );

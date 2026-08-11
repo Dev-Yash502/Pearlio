@@ -113,8 +113,7 @@ export default function FeaturesSection() {
               <motion.span style={{ opacity: w1, x: w1X }} className="inline-block">We</motion.span>
               <motion.span style={{ opacity: w2, x: w2X }} className="inline-block">build</motion.span>
               <motion.span style={{ opacity: w3, x: w3X }} className="inline-block">websites</motion.span>
-              {/* FIX: <br /> has no effect inside display:flex. Use a full-width spacer div to force line break */}
-              <div className="basis-full h-0" aria-hidden="true" />
+              <br />
               <motion.span style={{ opacity: w4, x: w4X }} className="inline-block">that</motion.span>
               <motion.span style={{ opacity: w5, x: w5X }} className="inline-block bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-heading">dominate</motion.span>
               <motion.span style={{ opacity: w6, x: w6X }} className="inline-block bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent font-heading">the</motion.span>
@@ -148,8 +147,7 @@ export default function FeaturesSection() {
                   <GlowCard
                     glowColor={service.glowColor}
                     customSize={true}
-                    // FIX: Added `group` class so group-hover: utilities on children (arrow, text) actually work
-                    className="group w-full min-h-[380px] md:min-h-[400px] flex flex-col justify-between h-full hover:scale-[1.02] duration-300 pointer-events-auto"
+                    className="w-full min-h-[380px] md:min-h-[400px] flex flex-col justify-between h-full hover:scale-[1.02] duration-300 pointer-events-auto"
                   >
                     <div className="flex flex-col items-start text-left h-full justify-between">
                       <div>
@@ -182,14 +180,10 @@ export default function FeaturesSection() {
                           ))}
                         </div>
 
-                        {/* FIX: Was a dead <div> with no href/onClick. Now a real Link to #contact */}
-                        <Link
-                          href="#contact"
-                          className="flex items-center gap-1 text-xs font-semibold text-white group-hover:text-accent transition-colors duration-300 border-t border-border/40 pt-3 w-full"
-                        >
+                        <div className="flex items-center gap-1 text-xs font-semibold text-white group-hover:text-accent transition-colors duration-300 border-t border-border/40 pt-3 w-full">
                           <span>Get Started</span>
                           <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
-                        </Link>
+                        </div>
                       </div>
                     </div>
                   </GlowCard>

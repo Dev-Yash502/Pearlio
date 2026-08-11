@@ -7,7 +7,6 @@ import { Sparkles, MousePointer2 } from "lucide-react";
 
 export default function ShowcaseSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const isVisible = useInView(sectionRef, { margin: "50% 0px 50% 0px" });
   
   // Track scroll progress continuously from entering viewport bottom to leaving viewport top
   const { scrollYProgress } = useScroll({
@@ -93,11 +92,7 @@ export default function ShowcaseSection() {
             style={{ opacity: cardOpacity, scale: cardScale }}
             className="w-full relative min-h-[500px] md:min-h-[540px] z-10 flex justify-center"
           >
-            {/* FIX: Always keep LunarGravityCard mounted — conditional unmounting resets GPU state
-                and causes visible flash. Use CSS visibility to hide without destroying context. */}
-            <div style={{ visibility: isVisible ? 'visible' : 'hidden' }}>
-              <LunarGravityCard scrollProgress={moonProgress} />
-            </div>
+            <LunarGravityCard scrollProgress={moonProgress} />
             
             {/* Hint Overlay */}
             <div aria-hidden="true" className="absolute bottom-6 right-8 md:bottom-8 md:right-16 z-30 pointer-events-none flex items-center gap-2 px-4 py-2 rounded-full bg-background/80 backdrop-blur-md border border-border/80 text-xs font-semibold text-textPrimary animate-bounce shadow-lg">

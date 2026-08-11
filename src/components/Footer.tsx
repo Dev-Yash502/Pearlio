@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Sparkles, Send, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
@@ -39,10 +39,6 @@ export default function Footer() {
   const input1Opacity = useTransform(smoothProgress, [0.25, 0.55], [0, 1], { clamp: true });
   const input1Y = useTransform(smoothProgress, [0.25, 0.55], [20, 0], { clamp: true });
 
-  // FIX: Email field uses its own stagger values (was incorrectly sharing input1Opacity/Y)
-  const input1bOpacity = useTransform(smoothProgress, [0.29, 0.59], [0, 1], { clamp: true });
-  const input1bY = useTransform(smoothProgress, [0.29, 0.59], [20, 0], { clamp: true });
-
   const input2Opacity = useTransform(smoothProgress, [0.32, 0.62], [0, 1], { clamp: true });
   const input2Y = useTransform(smoothProgress, [0.32, 0.62], [20, 0], { clamp: true });
 
@@ -56,38 +52,11 @@ export default function Footer() {
   const bottomOpacity = useTransform(smoothProgress, [0.6, 0.9], [0, 1], { clamp: true });
   const bottomY = useTransform(smoothProgress, [0.6, 0.9], [30, 0], { clamp: true });
 
-  // FIX: Store timeout ID in ref so we can clear it on unmount (prevents memory leak
-  // and setState call on unmounted component)
-  const submitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (submitTimerRef.current) clearTimeout(submitTimerRef.current);
-    };
-  }, []);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
-
-    // Basic email format validation (native type="email" validates on blur,
-    // but we add a regex check here as a defense-in-depth measure)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return;
-
     setSubmitted(true);
-
-    // TODO: Replace this with a real API call, e.g.:
-    // await fetch('https://formspree.io/f/YOUR_ID', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ name, email, brief }),
-    // });
-    // For now we log to console so data isn't silently lost during development
-    console.log('[Contact Form Submission]', { name, email, brief });
-
-    // FIX: Store timeout in ref so it can be cleared on unmount
-    submitTimerRef.current = setTimeout(() => {
+    setTimeout(() => {
       setSubmitted(false);
       setName("");
       setEmail("");
@@ -96,7 +65,7 @@ export default function Footer() {
   };
 
   return (
-    <div ref={containerRef} className="relative h-[150vh] bg-background border-t border-border/80 w-full">
+    <div ref={containerRef} className="relative h-[150vh] bg-[#07060F] border-t border-border/80 w-full">
       {/* Sticky container that locks on screen at the bottom of the page */}
       <div className="sticky top-0 h-screen w-full flex flex-col justify-center items-center overflow-hidden z-10 py-8">
         
@@ -165,8 +134,7 @@ export default function Footer() {
                           className="w-full bg-[#0A0915] border border-border/80 rounded-xl px-4 py-3 text-xs text-white placeholder-textMuted/50 focus:outline-none focus:border-accent transition-all duration-300 font-semibold"
                         />
                       </motion.div>
-                      {/* FIX: Email uses its own stagger (input1bOpacity/Y) — was sharing input1 causing both to appear simultaneously */}
-                      <motion.div style={{ opacity: input1bOpacity, y: input1bY }} className="space-y-1.5">
+                      <motion.div style={{ opacity: input1Opacity, y: input1Y }} className="space-y-1.5">
                         <label htmlFor="email" className="text-[10px] font-bold uppercase tracking-wider text-textMuted">Your Email</label>
                         <input
                           type="email"
@@ -213,7 +181,7 @@ export default function Footer() {
           >
             {/* Logo Column */}
             <div className="flex flex-col items-start">
-              <Link href="/" className="flex items-center gap-2 group mb-2">
+              <Link href="#" className="flex items-center gap-2 group mb-2">
                 <span className="w-7 h-7 rounded-lg bg-gradient-to-tr from-primary to-secondary flex items-center justify-center font-heading font-black text-lg text-white shadow-glow-primary transition-transform duration-300 group-hover:scale-110">
                   P
                 </span>

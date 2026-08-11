@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 
 export default function CustomCursor() {
-  // FIX: Use null as initial state to defer rendering until client-side detection completes.
-  // Previously useState(true) caused a flash on desktop: cursor was hidden for 1 frame
-  // before useEffect corrected it (SSR/hydration mismatch).
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [isMobile, setIsMobile] = useState(true);
   const [hoveredEl, setHoveredEl] = useState(false);
 
   // Mouse coordinates motion values
@@ -59,8 +56,7 @@ export default function CustomCursor() {
     };
   }, [cursorX, cursorY]);
 
-  // null = not yet detected (SSR / pre-hydration), true = mobile, false = desktop
-  if (isMobile !== false) return null;
+  if (isMobile) return null;
 
   return (
     <>

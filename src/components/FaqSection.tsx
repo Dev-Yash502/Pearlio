@@ -131,30 +131,22 @@ export default function FaqSection() {
                   key={idx}
                   className="rounded-[1.5rem] border border-border bg-card/45 backdrop-blur-md overflow-hidden"
                 >
-                  {/* FIX: Removed focus:outline-none (WCAG 2.4.7 failure). Added focus-visible ring.
-                      Added aria-controls linking button to its answer panel. */}
                   <button
                     onClick={() => toggleFaq(idx)}
-                    id={`faq-btn-${idx}`}
-                    aria-controls={`faq-answer-${idx}`}
-                    className="w-full px-5 py-5 md:px-7 md:py-6 flex items-center justify-between text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset group relative"
+                    className="w-full px-5 py-5 md:px-7 md:py-6 flex items-center justify-between text-left focus:outline-none group relative"
                     aria-expanded={isOpen}
                   >
                     <span className="font-heading font-bold text-base md:text-lg text-white group-hover:text-accent transition-colors duration-200 pr-4">
                       {faq.question}
                     </span>
-                    <span className="p-1 rounded-full bg-background border border-border/80 text-textMuted group-hover:text-white transition-colors" aria-hidden="true">
+                    <span className="p-1 rounded-full bg-background border border-border/80 text-textMuted group-hover:text-white transition-colors">
                       {isOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </span>
                   </button>
 
                   <AnimatePresence initial={false}>
                     {isOpen && (
-                      // FIX: Added id (paired with button aria-controls) and role="region" for ARIA accordion
                       <motion.div
-                        id={`faq-answer-${idx}`}
-                        role="region"
-                        aria-labelledby={`faq-btn-${idx}`}
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, Variants } from "framer-motion";
 import { Check, Flame } from "lucide-react";
 import Link from "next/link";
 
@@ -9,7 +9,6 @@ const plans = [
   {
     name: "Starter",
     price: "$2,499",
-    showSuffix: true,
     description: "Launch a clean, ultra-fast website to establish your brand.",
     features: [
       "Custom Next.js 14 Development",
@@ -26,7 +25,6 @@ const plans = [
   {
     name: "Growth",
     price: "$4,999",
-    showSuffix: true,
     description: "Scale your customer acquisition with dynamic content and features.",
     features: [
       "Everything in Starter plan",
@@ -44,7 +42,6 @@ const plans = [
   {
     name: "Custom",
     price: "Bespoke",
-    showSuffix: false,
     description: "Go beyond standard web experiences with fully immersive custom systems.",
     features: [
       "Unlimited pages & layouts",
@@ -157,14 +154,10 @@ export default function PricingSection() {
               const opacity = index === 0 ? card1Opacity : index === 2 ? card3Opacity : card2Opacity;
 
               return (
-                // FIX: Use plan.name as key instead of index for stable React identity
-                // Added article role so screen readers understand card grouping
-                <motion.article
+                <motion.div
                   style={{ x: cardX, y: cardY, opacity }}
-                  key={plan.name}
-                  aria-label={`${plan.name} pricing plan`}
-                  // FIX: Added transform-gpu to prevent paint jank with backdrop-blur during hover scale
-                  className={`transform-gpu p-6 md:p-8 rounded-[2.5rem] border bg-card/50 backdrop-blur-md flex flex-col justify-between text-left relative overflow-hidden transition-all duration-300 hover:scale-[1.02] ${plan.glow}`}
+                  key={index}
+                  className={`p-6 md:p-8 rounded-[2.5rem] border bg-card/50 backdrop-blur-md flex flex-col justify-between text-left relative overflow-hidden transition-all duration-300 hover:scale-[1.02] ${plan.glow}`}
                 >
                   {plan.popular && (
                     <div className="absolute top-6 right-6 bg-gradient-to-r from-primary to-secondary text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-glow-primary">
@@ -186,8 +179,7 @@ export default function PricingSection() {
                       <span className="font-heading font-black text-4xl md:text-5xl text-white">
                         {plan.price}
                       </span>
-                      {/* FIX: Use showSuffix field instead of brittle string comparison */}
-                      {plan.showSuffix && (
+                      {plan.price !== "Bespoke" && (
                         <span className="text-textMuted text-xs font-semibold">/project</span>
                       )}
                     </div>
@@ -218,7 +210,7 @@ export default function PricingSection() {
                   >
                     {plan.cta}
                   </Link>
-                </motion.article>
+                </motion.div>
               );
             })}
           </div>
