@@ -1,13 +1,25 @@
 "use client";
 
 import React, { useRef, useMemo, Suspense, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, useTexture, Environment } from "@react-three/drei";
-import { MotionValue, useMotionValue, useTransform, motion } from "framer-motion";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, useTexture } from "@react-three/drei";
+import { MotionValue, useMotionValue, useTransform, motion, useReducedMotion } from "framer-motion";
 import * as THREE from "three";
 import { cn } from "@/lib/utils";
 
 const RADIUS = 2.0;
+
+// Permanently force the Three.js scene background to null (transparent).
+// This runs inside the R3F render loop so it overrides anything Environment
+// or other helpers might set, every single frame.
+function TransparentBackground() {
+  const { scene, gl } = useThree();
+  useFrame(() => {
+    scene.background = null;
+    gl.setClearColor(0x000000, 0);
+  });
+  return null;
+}
 
 const RealisticMoon = ({ onClick, scrollProgress }: { onClick?: () => void; scrollProgress?: MotionValue<number> }) => {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -398,6 +410,8 @@ export interface LunarGravityCardProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   scrollProgress?: MotionValue<number>;
+  /** When true, OrbitControls rotation is enabled so the user can grab and spin the Moon. */
+  interactionEnabled?: boolean;
 }
 
 export default function LunarGravityCard({ 
@@ -412,11 +426,13 @@ export default function LunarGravityCard({
     </>
   ),
   description = "Pearlio builds immersive 3D websites, e-commerce stores, and high-performance landing pages that captivate visitors. Click the moon to trigger gravity fields and experience next-gen web technology.",
-  scrollProgress
+  scrollProgress,
+  interactionEnabled = false,
 }: LunarGravityCardProps) {
   const massiveAsteroidsRef = useRef<Float32Array>(new Float32Array(75 * 4));
+  const shouldReduceMotion = useReducedMotion();
   const fallbackProgress = useMotionValue(1.0);
-  const activeProgress = scrollProgress || fallbackProgress;
+  const activeProgress = shouldReduceMotion ? fallbackProgress : (scrollProgress || fallbackProgress);
 
   // Map scroll progress [0 -> 0.4] to canvas flying-in entry transforms (with clamp to prevent coordinate warping)
   const canvasX = useTransform(activeProgress, [0, 0.4], [600, 0], { clamp: true });
@@ -448,23 +464,35 @@ export default function LunarGravityCard({
         style={{ x: canvasX, y: canvasY, opacity: canvasOpacity }}
         className="relative md:absolute md:right-0 md:top-0 w-full h-[380px] md:h-full md:w-[65%] pointer-events-auto z-0 flex items-center justify-center"
       >
-        <div className="absolute inset-0 w-full h-full">
+        <div className="absolute inset-0 w-full h-full" style={{ background: 'transparent' }}>
           <Canvas
             shadows
             camera={{ position: [0, 4, 10], fov: 45 }}
             dpr={[1, 2]}
-            gl={{ alpha: true, antialias: true }}
-            onCreated={({ gl }) => {
+            gl={{ alpha: true, antialias: true, premultipliedAlpha: false }}
+            style={{ background: 'transparent' }}
+            onCreated={({ gl, scene }) => {
               gl.setClearColor(0x000000, 0);
+              scene.background = null;
             }}
           >
-            <Environment preset="city" />
+            {/* TransparentBackground runs every frame to keep scene.background null */}
+            <TransparentBackground />
 
-            <ambientLight intensity={0.02} />
-            <directionalLight position={[8, 5, 5]} intensity={1.5} color="#ffffff" castShadow shadow-mapSize={[1024, 1024]} />
-            <directionalLight position={[-5, -3, -5]} intensity={0.15} color="#8b5cf6" />
+            <ambientLight intensity={0.25} />
+            <directionalLight position={[8, 5, 5]} intensity={1.8} color="#ffffff" castShadow shadow-mapSize={[1024, 1024]} />
+            <directionalLight position={[-5, -3, -5]} intensity={0.25} color="#8b5cf6" />
+            <pointLight position={[0, 0, 8]} intensity={0.4} color="#a78bfa" />
 
-            <OrbitControls enableZoom={false} enablePan={false} autoRotate={false} />
+            <OrbitControls
+              enableZoom={false}
+              enablePan={false}
+              autoRotate={false}
+              enableRotate={interactionEnabled}
+              // Smooth damping makes hand-release feel natural
+              enableDamping={true}
+              dampingFactor={0.08}
+            />
 
             <Suspense fallback={null}>
               <SceneGroup scrollProgress={activeProgress} massiveAsteroidsRef={massiveAsteroidsRef} />
