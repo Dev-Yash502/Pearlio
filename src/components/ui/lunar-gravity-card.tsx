@@ -449,7 +449,15 @@ export default function LunarGravityCard({
         className="relative md:absolute md:right-0 md:top-0 w-full h-[380px] md:h-full md:w-[65%] pointer-events-auto z-0 flex items-center justify-center"
       >
         <div className="absolute inset-0 w-full h-full">
-          <Canvas shadows camera={{ position: [0, 4, 10], fov: 45 }} dpr={[1, 2]}>
+          <Canvas
+            shadows
+            camera={{ position: [0, 4, 10], fov: 45 }}
+            dpr={[1, 2]}
+            gl={{ alpha: true, antialias: true }}
+            onCreated={({ gl }) => {
+              gl.setClearColor(0x000000, 0);
+            }}
+          >
             <Environment preset="city" />
 
             <ambientLight intensity={0.02} />

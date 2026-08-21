@@ -10,11 +10,11 @@ export default function RobotSplineSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isVisible = useInView(containerRef, { margin: "50% 0px 50% 0px" });
 
-  // Track scroll progress continuously from entering viewport bottom to leaving viewport top
-  // For H = 120vh, S = 100vh: Total range = 220vh. Pins at 0.45, unpins at 0.55.
+  // A complete scroll chapter: progress starts when the section pins and ends
+  // exactly when its sticky viewport is allowed to release.
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start end", "end start"],
+    offset: ["start start", "end end"],
   });
 
   // Smooth out progress with high-fidelity spring transition
@@ -34,15 +34,14 @@ export default function RobotSplineSection() {
   const descOpacity = useTransform(smoothProgress, [0.15, 0.40], [0, 0.85], { clamp: true });
   const descY = useTransform(smoothProgress, [0.15, 0.40], [25, 0], { clamp: true });
 
-  // Robot scroll-linked entry: slides in from right side of the screen (500px -> 0)
-  // Completes exactly as the section pins at 0.45
-  const robotX = useTransform(smoothProgress, [0.15, 0.45], [500, 0], { clamp: true });
-  const robotOpacity = useTransform(smoothProgress, [0.15, 0.42], [0, 1], { clamp: true });
-  const robotScale = useTransform(smoothProgress, [0.15, 0.45], [0.85, 1.0], { clamp: true });
+  // Let the robot continue its entrance through most of the pinned chapter.
+  const robotX = useTransform(smoothProgress, [0.12, 0.68], [150, 0], { clamp: true });
+  const robotOpacity = useTransform(smoothProgress, [0.08, 0.36], [0, 1], { clamp: true });
+  const robotScale = useTransform(smoothProgress, [0.12, 0.68], [0.85, 1.0], { clamp: true });
 
   return (
-    <div ref={containerRef} className="relative h-[120vh] bg-background w-full">
-      {/* Sticky container that locks on screen while scrubbing scroll animations */}
+    <div ref={containerRef} className="relative h-[220svh] md:h-[260vh] bg-background w-full">
+      {/* Pin the viewport until the robot sequence reaches its final state. */}
       <div className="sticky top-0 h-screen w-full flex flex-col justify-center items-center overflow-hidden z-10 px-6 gpu-layer">
         
         {/* Main Content Layout - No card border/background (Robot taken out of the box) */}

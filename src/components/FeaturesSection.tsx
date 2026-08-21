@@ -89,7 +89,7 @@ export default function FeaturesSection() {
   const globalContentOpacity = useTransform(smoothProgress, [0.85, 0.98], [1, 0], { clamp: true });
 
   return (
-    <div ref={containerRef} className="relative h-[160vh] bg-background w-full">
+    <div id="services" ref={containerRef} className="relative h-[160vh] bg-background w-full">
       <div className="sticky top-0 h-screen w-full flex flex-col justify-center items-center overflow-hidden z-10 py-12">
         {/* Background glow elements */}
         <div className="absolute top-1/4 left-10 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[100px] pointer-events-none" />
@@ -141,13 +141,13 @@ export default function FeaturesSection() {
               return (
                 <motion.div 
                   style={{ x: cardX, y: cardY, opacity: cardOpacity }}
-                  key={index} 
+                  key={service.title} 
                   className="flex h-full"
                 >
                   <GlowCard
                     glowColor={service.glowColor}
                     customSize={true}
-                    className="w-full min-h-[380px] md:min-h-[400px] flex flex-col justify-between h-full hover:scale-[1.02] duration-300 pointer-events-auto"
+                    className="w-full min-h-[380px] md:min-h-[400px] flex flex-col justify-between h-full hover:scale-[1.02] duration-300 pointer-events-auto group"
                   >
                     <div className="flex flex-col items-start text-left h-full justify-between">
                       <div>
@@ -180,10 +180,13 @@ export default function FeaturesSection() {
                           ))}
                         </div>
 
-                        <div className="flex items-center gap-1 text-xs font-semibold text-white group-hover:text-accent transition-colors duration-300 border-t border-border/40 pt-3 w-full">
+                        <Link 
+                          href="#contact"
+                          className="flex items-center gap-1 text-xs font-semibold text-white group-hover:text-accent transition-colors duration-300 border-t border-border/40 pt-3 w-full cursor-pointer"
+                        >
                           <span>Get Started</span>
                           <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" />
-                        </div>
+                        </Link>
                       </div>
                     </div>
                   </GlowCard>
@@ -211,7 +214,7 @@ export default function FeaturesSection() {
               </h3>
               
               <p className="text-textMuted text-xs sm:text-sm leading-relaxed">
-                We don't just hand off files. We rank your site on Google page 1 with search engine optimization, optimize script bundles continuously, monitor health 24/7, and handle rapid content updates. Perfect for startups looking to grow without dedicated IT teams.
+                We don't just hand off files. We provide technical SEO foundations, optimize script bundles, monitor site health, and handle rapid content updates. Perfect for startups looking to grow without dedicated IT teams.
               </p>
             </div>
 

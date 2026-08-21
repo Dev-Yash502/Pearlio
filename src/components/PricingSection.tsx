@@ -11,7 +11,7 @@ const plans = [
     price: "$2,499",
     description: "Launch a clean, ultra-fast website to establish your brand.",
     features: [
-      "Custom Next.js 14 Development",
+      "Custom Next.js Development",
       "Up to 5 Pages designed from scratch",
       "Mobile-first responsive layout",
       "Framer Motion entrance animations",
@@ -104,9 +104,9 @@ export default function PricingSection() {
   const globalExitOpacity = useTransform(smoothProgress, [0.85, 0.98], [1, 0], { clamp: true });
 
   return (
-    <div ref={containerRef} className="relative h-[200vh] bg-background w-full">
+    <div id="pricing" ref={containerRef} className="relative h-[200vh] bg-background w-full">
       {/* Sticky container that keeps elements locked until scroll-seek is complete */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-center items-center overflow-hidden z-10 py-8">
+      <div className="sticky top-0 min-h-screen md:h-screen w-full flex flex-col justify-center items-center overflow-y-auto md:overflow-hidden z-10 py-8">
         
         {/* Background glow decoration */}
         <motion.div 
@@ -133,8 +133,8 @@ export default function PricingSection() {
               style={{ opacity: titleOpacity, y: titleY }}
               className="font-heading font-black text-4xl sm:text-5xl md:text-6xl tracking-tight text-white mb-4"
             >
-              Transparent pricing. <br />
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Zero hidden fees.</span>
+              Predictable pricing. <br />
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">No hidden fees.</span>
             </motion.h2>
 
             <motion.p 
@@ -156,7 +156,7 @@ export default function PricingSection() {
               return (
                 <motion.div
                   style={{ x: cardX, y: cardY, opacity }}
-                  key={index}
+                  key={plan.name}
                   className={`p-6 md:p-8 rounded-[2.5rem] border bg-card/50 backdrop-blur-md flex flex-col justify-between text-left relative overflow-hidden transition-all duration-300 hover:scale-[1.02] ${plan.glow}`}
                 >
                   {plan.popular && (

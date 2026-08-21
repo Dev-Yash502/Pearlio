@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
 
 interface FaqItem {
@@ -85,7 +85,7 @@ export default function FaqSection() {
   };
 
   return (
-    <div ref={containerRef} className="relative h-[200vh] bg-background w-full">
+    <div id="faq" ref={containerRef} className="relative h-[200vh] bg-background w-full">
       {/* Sticky container that keeps elements locked until scroll-seek is complete */}
       <div className="sticky top-0 h-screen w-full flex flex-col justify-center items-center overflow-hidden z-10 py-8">
         
@@ -128,13 +128,15 @@ export default function FaqSection() {
               return (
                 <motion.div
                   style={{ x: itemX, opacity }}
-                  key={idx}
+                  key={faq.question}
                   className="rounded-[1.5rem] border border-border bg-card/45 backdrop-blur-md overflow-hidden"
                 >
                   <button
+                    id={`faq-question-${idx}`}
                     onClick={() => toggleFaq(idx)}
-                    className="w-full px-5 py-5 md:px-7 md:py-6 flex items-center justify-between text-left focus:outline-none group relative"
+                    className="w-full px-5 py-5 md:px-7 md:py-6 flex items-center justify-between text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-[1.5rem] group relative"
                     aria-expanded={isOpen}
+                    aria-controls={`faq-answer-${idx}`}
                   >
                     <span className="font-heading font-bold text-base md:text-lg text-white group-hover:text-accent transition-colors duration-200 pr-4">
                       {faq.question}
@@ -144,20 +146,20 @@ export default function FaqSection() {
                     </span>
                   </button>
 
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                      >
-                        <div className="px-5 pb-5 md:px-7 md:pb-6 text-xs md:text-sm text-textMuted leading-relaxed border-t border-border/40 pt-3 font-semibold">
-                          {faq.answer}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <motion.div
+                    id={`faq-answer-${idx}`}
+                    role="region"
+                    aria-labelledby={`faq-question-${idx}`}
+                    aria-hidden={!isOpen}
+                    initial={false}
+                    animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+                    transition={{ duration: 0.25, ease: [0.04, 0.62, 0.23, 0.98] }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-5 pb-6 pt-1 md:px-7 md:pb-7 text-sm md:text-base text-textMuted font-medium leading-relaxed border-t border-border/40">
+                      {faq.answer}
+                    </div>
+                  </motion.div>
                 </motion.div>
               );
             })}

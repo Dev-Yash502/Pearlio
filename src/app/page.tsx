@@ -1,8 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ShowcaseSection from "@/components/ShowcaseSection";
-import RobotSplineSection from "@/components/RobotSplineSection";
-import SocialProof from "@/components/SocialProof";
 import FeaturesSection from "@/components/FeaturesSection";
 import PricingSection from "@/components/PricingSection";
 import FaqSection from "@/components/FaqSection";
@@ -15,8 +13,6 @@ export default function Home() {
       <main className="relative z-10">
         <Hero />
         <ShowcaseSection />
-        <RobotSplineSection />
-        <SocialProof />
         <FeaturesSection />
         <PricingSection />
         <FaqSection />
@@ -25,3 +21,4 @@ export default function Home() {
     </>
   );
 }
+

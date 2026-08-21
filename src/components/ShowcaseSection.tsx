@@ -1,107 +1,164 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll, useTransform, useSpring, useInView } from "framer-motion";
-import LunarGravityCard from "@/components/ui/lunar-gravity-card";
-import { Sparkles, MousePointer2 } from "lucide-react";
+import {
+  motion,
+  useScroll,
+  useSpring,
+  useTransform,
+  useReducedMotion,
+  useMotionValue,
+} from "framer-motion";
+import dynamic from "next/dynamic";
 
+// Dynamically import — R3F/Three.js must be client-only
+const LunarGravityCard = dynamic(
+  () => import("@/components/ui/lunar-gravity-card"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[600px]" aria-hidden="true" />
+    ),
+  }
+);
+
+// ─── Animated chevron hint ────────────────────────────────────────────────────
+function ScrollHint() {
+  return (
+    <div className="flex flex-col items-center gap-2 select-none pointer-events-none">
+      <motion.div
+        animate={{ y: [0, 7, 0] }}
+        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+        className="w-5 h-5 border-b-2 border-r-2 border-accent rotate-45 opacity-70"
+      />
+      <span className="text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-textMuted/70">
+        Scroll to control orbits
+      </span>
+    </div>
+  );
+}
+
+// ─── Stage dot — own component so hooks are called legally at top-level ───────
+const STAGES = [0, 0.2, 0.4, 0.6, 0.8, 1.0] as const;
+
+function StageDot({
+  stage,
+  progress,
+}: {
+  stage: number;
+  progress: ReturnType<typeof useSpring>;
+}) {
+  const lo = Math.max(0, stage - 0.06);
+  const hi = Math.min(1, stage + 0.06);
+  const dotOpacity = useTransform(progress, [lo, stage, hi], [0.18, 1.0, 0.55]);
+  const dotScale   = useTransform(progress, [lo, stage, hi], [0.6,  1.35, 0.8]);
+  return (
+    <motion.div
+      style={{ opacity: dotOpacity, scale: dotScale }}
+      className="w-1.5 h-1.5 rounded-full bg-accent"
+    />
+  );
+}
+
+// ─── Main ShowcaseSection ─────────────────────────────────────────────────────
 export default function ShowcaseSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  
-  // Track scroll progress continuously from entering viewport bottom to leaving viewport top
+  const outerRef = useRef<HTMLElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  // useScroll: 0 when section-top hits viewport-top, 1 when section-bottom hits viewport-bottom.
+  // With h-[300svh] this gives the user 200svh of scroll runway inside the sticky pin.
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
+    target: outerRef,
+    offset: ["start start", "end end"],
   });
 
-  // Smooth out progress with high-fidelity spring transition
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 80,
-    damping: 25,
-    restDelta: 0.001
+  // Spring: cinematic smoothing — not robotic, not instant.
+  const springProgress = useSpring(scrollYProgress, {
+    stiffness: 55,
+    damping: 22,
+    restDelta: 0.0005,
   });
 
-  // Word by word scroll lighting reveals for header text (mapped to viewport entry)
-  const w1 = useTransform(smoothProgress, [0.04, 0.16], [0.15, 1], { clamp: true });
-  const w2 = useTransform(smoothProgress, [0.07, 0.19], [0.15, 1], { clamp: true });
-  const w3 = useTransform(smoothProgress, [0.1, 0.22], [0.15, 1], { clamp: true });
-  const w4 = useTransform(smoothProgress, [0.13, 0.25], [0.15, 1], { clamp: true });
+  // Reduced-motion: show completed state immediately, skip the journey.
+  const staticProgress = useMotionValue(1.0);
+  const activeProgress = prefersReducedMotion ? staticProgress : springProgress;
 
-  // Staggered words flying in from alternate sides (left/right) during entry
-  const w1X = useTransform(smoothProgress, [0.04, 0.16], [-120, 0], { clamp: true });
-  const w2X = useTransform(smoothProgress, [0.07, 0.19], [120, 0], { clamp: true });
-  const w3X = useTransform(smoothProgress, [0.1, 0.22], [-120, 0], { clamp: true });
-  const w4X = useTransform(smoothProgress, [0.13, 0.25], [120, 0], { clamp: true });
+  // Hint fades away once the user begins scrolling
+  const hintOpacity = useTransform(activeProgress, [0, 0.10, 0.18], [1, 1, 0], { clamp: true });
 
-  const subOpacity = useTransform(smoothProgress, [0.15, 0.28], [0.15, 1], { clamp: true });
-  const subY = useTransform(smoothProgress, [0.15, 0.28], [15, 0], { clamp: true });
-  const badgeOpacity = useTransform(smoothProgress, [0.0, 0.12], [0, 1], { clamp: true });
+  // Ambient glow intensifies as the orbital scene matures
+  const glowOpacity = useTransform(activeProgress, [0, 0.5, 1.0], [0.03, 0.07, 0.12], { clamp: true });
 
-  // Map scroll progress to 3D moon container transforms (fades in as it enters, fades out only at the end of viewport exit)
-  const cardOpacity = useTransform(smoothProgress, [0.12, 0.28, 0.85, 0.98], [0, 1, 1, 0], { clamp: true });
-  const cardScale = useTransform(smoothProgress, [0.12, 0.28], [0.92, 1], { clamp: true });
+  // Entire sticky view fades out in the final 8% so the next section slides in gracefully
+  const sectionFade = useTransform(activeProgress, [0.90, 1.0], [1, 0], { clamp: true });
 
-  // Pinned orbit ring expansion: spans from progress 0.28 (pin point) to 0.70 (complete expansion)
-  const moonProgress = useTransform(smoothProgress, [0.28, 0.70], [0, 1], { clamp: true });
-
-  // Global exit fade out for all Showcase content (fades out only during viewport exit)
-  const globalExitOpacity = useTransform(smoothProgress, [0.85, 0.98], [1, 0], { clamp: true });
+  // Track-fill bar
+  const trackFill = useTransform(activeProgress, [0, 1], [0, 1], { clamp: true });
 
   return (
-    <div ref={sectionRef} className="relative h-[250vh] bg-background w-full overflow-hidden">
-      {/* Sticky container that stays fixed on screen while scrolling */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-center items-center overflow-hidden z-10 gpu-layer">
-        
-        {/* Background radial glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-accent/5 blur-[120px] pointer-events-none z-0" />
-        
-        {/* Global Exit opacity motion wrapper */}
+    // OUTER — 300svh tall. This is the scroll runway.
+    // sticky inner "locks" the viewport while user scrolls through all 300svh.
+    <section
+      ref={outerRef}
+      aria-label="Interactive 3D orbital showcase"
+      className="relative h-[300svh] bg-background w-full"
+    >
+      {/* INNER — sticky full-screen cinema. overflow-hidden prevents x-bleed from moon entry. */}
+      <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
+
+        {/* Deep-space ambient glow */}
         <motion.div
-          style={{ opacity: globalExitOpacity }}
-          className="w-full h-full flex flex-col justify-center items-center relative z-10"
+          style={{ opacity: glowOpacity }}
+          className="absolute inset-0 pointer-events-none z-0"
+          aria-hidden="true"
         >
-          {/* Centered header container */}
-          <div className="max-w-7xl mx-auto px-6 relative z-10 text-center mb-10 w-full">
-            <motion.div 
-              style={{ opacity: badgeOpacity }}
-              className="flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border mb-4 w-fit mx-auto"
-            >
-              <Sparkles className="w-4 h-4 text-secondary" />
-              <span className="text-xs font-bold uppercase tracking-wider text-textPrimary">
-                Next-Level Capabilities
-              </span>
-            </motion.div>
-            
-            <h2 className="font-heading font-black text-4xl sm:text-5xl md:text-6xl tracking-tight mb-4 text-white flex flex-wrap justify-center gap-x-3 gap-y-1 overflow-hidden py-2">
-              <motion.span style={{ opacity: w1, x: w1X }} className="inline-block">Websites</motion.span>
-              <motion.span style={{ opacity: w2, x: w2X }} className="inline-block">that</motion.span>
-              <motion.span style={{ opacity: w3, x: w3X }} className="inline-block bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">feel</motion.span>
-              <motion.span style={{ opacity: w4, x: w4X }} className="inline-block bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">alive.</motion.span>
-            </h2>
-            
-            <motion.p 
-              style={{ opacity: subOpacity, y: subY }}
-              className="text-sm sm:text-base md:text-lg text-textMuted max-w-2xl leading-relaxed mx-auto"
-            >
-              Static layouts don't capture attention. We build immersive 3D experiences that invite interaction, keep visitors hooked longer, and skyrocket conversions.
-            </motion.p>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                          w-[700px] h-[700px] rounded-full bg-primary/10 blur-[140px]" />
+          <div className="absolute top-1/3 right-0 w-[400px] h-[400px] rounded-full
+                          bg-secondary/8 blur-[100px]" />
+          <div className="absolute bottom-0 left-1/4 w-[350px] h-[350px] rounded-full
+                          bg-accent/5 blur-[120px]" />
+        </motion.div>
+
+        {/* Main content — fades at section exit */}
+        <motion.div
+          style={{ opacity: sectionFade }}
+          className="relative w-full h-full flex flex-col justify-center items-center z-10"
+        >
+          {/* LunarGravityCard: internal animations are fully driven by this 0→1 progress value.
+              Nothing inside the component has been changed. */}
+          <div className="w-full h-full flex items-center justify-center">
+            <LunarGravityCard scrollProgress={activeProgress} />
           </div>
 
-          {/* Fullscreen 3D Component Container */}
-          <motion.div
-            style={{ opacity: cardOpacity, scale: cardScale }}
-            className="w-full relative min-h-[500px] md:min-h-[540px] z-10 flex justify-center"
+          {/* Sidebar progress track — desktop only */}
+          <div
+            className="absolute left-5 top-1/2 -translate-y-1/2
+                       hidden md:flex flex-col items-center gap-3 z-20 pointer-events-none"
+            aria-hidden="true"
           >
-            <LunarGravityCard scrollProgress={moonProgress} />
-            
-            {/* Hint Overlay */}
-            <div aria-hidden="true" className="absolute bottom-6 right-8 md:bottom-8 md:right-16 z-30 pointer-events-none flex items-center gap-2 px-4 py-2 rounded-full bg-background/80 backdrop-blur-md border border-border/80 text-xs font-semibold text-textPrimary animate-bounce shadow-lg">
-              <MousePointer2 className="w-4 h-4 text-accent" />
-              <span>Scroll to Control Gravitational Orbits</span>
+            <div className="relative w-[2px] h-24 rounded-full bg-white/8 overflow-hidden">
+              <motion.div
+                style={{ scaleY: trackFill }}
+                className="absolute top-0 left-0 w-full h-full
+                           bg-gradient-to-b from-accent to-primary origin-top rounded-full"
+              />
             </div>
+            {STAGES.map((stage) => (
+              <StageDot key={stage} stage={stage} progress={springProgress} />
+            ))}
+          </div>
+
+          {/* Scroll hint — vanishes once the user scrolls */}
+          <motion.div
+            style={{ opacity: hintOpacity }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none"
+            aria-hidden="true"
+          >
+            <ScrollHint />
           </motion.div>
         </motion.div>
       </div>
-    </div>
+    </section>
   );
 }

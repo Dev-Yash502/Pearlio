@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { X } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import Magnetic from "@/components/ui/magnetic";
 
 const navItems = [
   { name: "Services", href: "#services" },
-  { name: "Work", href: "#work" },
   { name: "Pricing", href: "#pricing" },
   { name: "FAQ", href: "#faq" },
 ];
@@ -65,18 +65,11 @@ export default function Navbar() {
         />
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 flex items-center justify-between">
           
-          {/* Logo (Top-Left): Custom SVG geometric logo (white, 28x28) */}
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group z-50">
-            <svg 
-              width="28" 
-              height="28" 
-              viewBox="0 0 256 256" 
-              fill="white" 
-              xmlns="http://www.w3.org/2000/svg"
-              className="transition-transform duration-300 group-hover:scale-110"
-            >
-              <path d="M 256 64 L 256 128 L 192.5 128 L 160 95 L 128 64 L 96 95 L 63.5 128 L 64 128 L 128 192 L 128 256 L 64.5 256 L 32 223 L 0 192 L 0 64 L 64 0 L 192 0 Z M 256 192 L 256 256 L 192.5 256 L 160 223 L 128 192 L 128 128 L 192 128 Z" />
-            </svg>
+            <span aria-hidden="true" className="relative h-9 w-9 overflow-hidden rounded-full transition-transform duration-300 group-hover:scale-110">
+              <Image src="/logo.jpg" alt="" fill sizes="36px" className="scale-[1.65] object-cover object-[50%_28%]" />
+            </span>
             <span className="font-heading font-black text-2xl tracking-tight text-white transition-colors duration-300 group-hover:text-accent">
               Pearlio<span className="text-secondary">.</span>
             </span>
@@ -139,9 +132,9 @@ export default function Navbar() {
             {/* Top Logo and Close container */}
             <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
               <div className="flex items-center gap-2">
-                <svg width="28" height="28" viewBox="0 0 256 256" fill="white" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M 256 64 L 256 128 L 192.5 128 L 160 95 L 128 64 L 96 95 L 63.5 128 L 64 128 L 128 192 L 128 256 L 64.5 256 L 32 223 L 0 192 L 0 64 L 64 0 L 192 0 Z M 256 192 L 256 256 L 192.5 256 L 160 223 L 128 192 L 128 128 L 192 128 Z" />
-                </svg>
+                <span aria-hidden="true" className="relative h-9 w-9 overflow-hidden rounded-full">
+                  <Image src="/logo.jpg" alt="" fill sizes="36px" className="scale-[1.65] object-cover object-[50%_28%]" />
+                </span>
                 <span className="font-heading font-black text-2xl tracking-tight text-white">Pearlio<span className="text-secondary">.</span></span>
               </div>
               <button
